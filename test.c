@@ -10,8 +10,6 @@
 #include	"cstl/list.h"
 
 
-//[ [1, 2, 3], [1, 2, 4], [5, 6], [0] ]
-
 int	main()
 {
   vectorint*	v = vectorint_new();
@@ -37,12 +35,7 @@ int	main()
   listint*	l = listint_new();
   l->push_back(3);
   l->push_back(5);
-  listint_node*	n = l->begin;
-  while (n != NULL)
-    {
-      printf("%d\n", n->data);
-      n = n->next;
-    }
+  for_each_2(int, n, l, printf("%d\n", n));
   l->delete();
 
   return 0;
