@@ -17,7 +17,8 @@ struct			vector_base
   // iterator may be different from the original one.
 };
 
-void			vector_generic_push_back(void* this_, void* val);
+void	vector_generic_push_back(void* this_, void* val);
+void	vector_generic_delete(void* this);
 
 #endif /* !VECTOR_H_ */
 
@@ -33,15 +34,65 @@ void			vector_generic_push_back(void* this_, void* val);
 # define		MKNAME(begin, end)	TOKENPASTE2(TOKENPASTE2(begin ## vector, CSTL_NAME), end)
 
 
+MKNAME(struct _,);
+
+// ==========================
+// ======== ITERATOR ========
+// ==========================
+typedef				MKNAME(struct _,_iterator)
+{
+  unsigned char			_next_jmp[26];
+  struct _cstl_iterator*	(_stdcall *next)();
+  int				data_size;
+  CSTL_TYPE			data;
+  MKNAME(struct _,)*		parent;
+  int				i;
+}				MKNAME(,_iterator);
+
+
+
+// ==========================
+// ========== BASE ==========
+// ==========================
 typedef		MKNAME(struct _,)
 {
   CSTL_TYPE*	data;
   int		size;
   int		data_size;
 
-  unsigned char	_push_back_jmp[26];
-  void		(__stdcall *push_back)(CSTL_TYPE val);
-}		MKNAME(,);
+  MKNAME(,_iterator)	it;
+
+  unsigned char		_push_back_jmp[26];
+  void			(__stdcall *push_back)(CSTL_TYPE val);
+  unsigned char		_begin_jmp[26];
+  cstl_iterator*	(__stdcall *begin)();
+  unsigned char		_delete_jmp[26];
+  void			(__stdcall *delete)();
+}			MKNAME(,);
+
+
+
+
+// ==========================
+// ======== FUNCTIONS =======
+// ==========================
+static cstl_iterator*	MKNAME(,_next)(MKNAME(,_iterator)* it)
+{
+  it->i++;
+  if (it->i == it->parent->size)
+    return NULL;
+  it->data = it->parent->data[it->i];
+  return (cstl_iterator*)it;
+}
+
+static cstl_iterator*	MKNAME(,_begin)(MKNAME(,)* this)
+{
+  if (this->size == 0)
+    return NULL;
+  this->it.data = this->data[0];
+  this->it.i = 0;
+  return (cstl_iterator*)&this->it;
+}
 
 static void __stdcall	MKNAME(,_push_back)(MKNAME(,)* this, CSTL_TYPE val)
 {
@@ -50,14 +101,20 @@ static void __stdcall	MKNAME(,_push_back)(MKNAME(,)* this, CSTL_TYPE val)
 
 __attribute__((unused)) static MKNAME(,)*	MKNAME(,_new)()
 {
-  MKNAME(,)*	v;
+  MKNAME(,)*	this;
 
-  v = malloc(sizeof(MKNAME(,)));
-  v->data = NULL;
-  v->size = 0;
-  v->data_size = sizeof(CSTL_TYPE);
-  v->push_back = gen_func_call(v, v->_push_back_jmp, MKNAME(, _push_back));
-  return v;
+  this = malloc(sizeof(MKNAME(,)));
+  this->data = NULL;
+  this->size = 0;
+  this->data_size = sizeof(CSTL_TYPE);
+  this->push_back	= gen_func_call(this, this->_push_back_jmp,	MKNAME(,_push_back));
+  this->begin		= gen_func_call(this, this->_begin_jmp,		MKNAME(,_begin));
+  this->delete		= gen_func_call(this, this->_delete_jmp,	vector_generic_delete);
+
+  this->it.data_size = sizeof(CSTL_TYPE);
+  this->it.next	= gen_func_call(&this->it, this->it._next_jmp, MKNAME(,_next));
+  this->it.parent = this;
+  return this;
 }
 
 

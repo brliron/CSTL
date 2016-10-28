@@ -12,3 +12,8 @@ void			vector_generic_push_back(void* this_, void* val)
   memcpy(this->data + this->size * this->data_size, val, this->data_size);
   this->size++;
 }
+
+void	vector_generic_delete(void* this)
+{
+  free(this);
+}

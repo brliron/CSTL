@@ -141,7 +141,7 @@ __attribute__((unused)) static MKNAME(,)*	MKNAME(,_new)()
   this->push_back	= gen_func_call(this, this->_push_back_jmp,	MKNAME(,_push_back));
   this->begin		= gen_func_call(this, this->_begin_jmp,		MKNAME(,_begin));
   this->delete		= gen_func_call(this, this->_delete_jmp,	list_generic_delete);
-  
+
   this->it.data_size = sizeof(CSTL_TYPE);
   this->it.next	= gen_func_call(&this->it, this->it._next_jmp, MKNAME(,_next));
   return this;

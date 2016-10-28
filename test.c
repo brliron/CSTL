@@ -22,20 +22,20 @@ int	main()
 	     printf("%d + 1 = %d\n", it, var);
 	   }
 	   );
-  free(v);
+  v->delete();
 
 
   vectorstr*	v2 = vectorstr_new();
   v2->push_back("Test 1");
   v2->push_back("2ème test");
   for_each(char*, it, v2, printf("Str: %s\n", it));
-  free(v2);
+  v2->delete();
 
 
   listint*	l = listint_new();
   l->push_back(3);
   l->push_back(5);
-  for_each_2(int, n, l, printf("%d\n", n));
+  for_each(int, n, l, printf("%d\n", n));
   l->delete();
 
   return 0;

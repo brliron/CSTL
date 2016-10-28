@@ -3,21 +3,7 @@
 
 # include	<string.h>
 
-# define	for_each(type, it, v, block)	\
-  do {						\
-    if (v->size == 0)				\
-      break ;					\
-    int	_pos = 0;				\
-    type	it = v->data[_pos];		\
-    while (_pos < v->size)			\
-      {						\
-	block;					\
-	_pos++;					\
-	it = v->data[_pos];			\
-      }						\
-  } while (0)
-
-# define	for_each_2(type, it, o, block)			\
+# define	for_each(type, it, o, block)			\
   do {								\
     cstl_iterator*	_iterator = o->begin();			\
     while (_iterator != NULL)					\
