@@ -1,25 +1,69 @@
 #include	<stdlib.h>
 #include	"gen_func_call.h"
 
-#if !defined(CSTL_TYPE) || !defined(CSTL_NAME)
-# error you muse define CSTL_TYPE and CSTL_NAME.
-#endif
-
 #include	"util.h"
 
-#define		MKNAME(begin, end)	TOKENPASTE2(TOKENPASTE2(begin ## list, CSTL_NAME), end)
+#ifndef LIST_H_
+# define LIST_H_
+
+struct	list_base;
+
+struct				list_node
+{
+  struct list_base*		parent;
+  struct list_node*		prev;
+  struct list_node*		next;
+  char				data[1];
+};
+
+struct			list_base
+{
+  struct list_node*	front;
+  struct list_node*	back;
+  int			size;
+
+  int			node_size;
+  int			data_size;
+
+  cstl_iterator		it;
+  // I can't add new fields after this one because the size of the generic
+  // iterator may be different from the original one.
+};
+
+void			list_generic_push_front(void* this_, void* val);
+void			list_generic_push_back(void* this_, void* val);
+void			list_generic_delete(struct list_base* this);
+
+#endif /* !LIST_H_ */
+
+
+
+
+#ifndef CSTL_DONT_DEFINE_TYPE
+
+# if !defined(CSTL_TYPE) || !defined(CSTL_NAME)
+#  error you muse define CSTL_TYPE and CSTL_NAME.
+# endif
+
+# define		MKNAME(begin, end)	TOKENPASTE2(TOKENPASTE2(begin ## list, CSTL_NAME), end)
 
 
 MKNAME(struct _,);
 
+// ==========================
+// ========== NODE ==========
+// ==========================
 typedef				MKNAME(struct _,_node)
 {
-  CSTL_TYPE			data;
   MKNAME(struct _,)*		parent;
   MKNAME(struct _,_node)*	prev;
   MKNAME(struct _,_node)*	next;
+  CSTL_TYPE			data;
 }				MKNAME(,_node);
 
+// ==========================
+// ======== ITERATOR ========
+// ==========================
 typedef				MKNAME(struct _,_iterator)
 {
   unsigned char			_next_jmp[26];
@@ -40,12 +84,18 @@ static cstl_iterator*	MKNAME(,_next)(MKNAME(,_iterator)* it)
 
 
 
+// ==========================
+// ========== BASE ==========
+// ==========================
 typedef			MKNAME(struct _,)
 {
   MKNAME(,_node)*	front;
   MKNAME(,_node)*	back;
   int			size;
-  
+
+  int			node_size;
+  int			data_size;
+
   MKNAME(,_iterator)	it;
 
   unsigned char		_push_front_jmp[26];
@@ -58,83 +108,48 @@ typedef			MKNAME(struct _,)
   void			(__stdcall *delete)();
 }			MKNAME(,);
 
-static void __stdcall	MKNAME(,_push_front)(MKNAME(,)* l, CSTL_TYPE val)
+static void __stdcall	MKNAME(,_push_front)(MKNAME(,)* this, CSTL_TYPE val)
 {
-  MKNAME(,_node)*	node;
-
-  node = malloc(sizeof(MKNAME(,_node)));
-  node->data = val;
-  node->parent = l;
-  node->prev = NULL;
-  node->next = l->front;
-  if (l->front)
-    l->front->prev = node;
-  l->front = node;
-  if (l->back == NULL)
-    l->back = node;
-  l->size++;
+  list_generic_push_front(this, &val);
 }
 
-static void __stdcall	MKNAME(,_push_back)(MKNAME(,)* l, CSTL_TYPE val)
+static void __stdcall	MKNAME(,_push_back)(MKNAME(,)* this, CSTL_TYPE val)
 {
-  MKNAME(,_node)*	node;
-
-  node = malloc(sizeof(MKNAME(,_node)));
-  node->data = val;
-  node->parent = l;
-  node->prev = l->back;
-  node->next = NULL;
-  if (l->back)
-    l->back->next = node;
-  if (l->front == NULL)
-    l->front = node;
-  l->back = node;
-  l->size++;
+  list_generic_push_back(this, &val);
 }
 
-static cstl_iterator*	MKNAME(,_begin)(MKNAME(,)* l)
+static cstl_iterator*	MKNAME(,_begin)(MKNAME(,)* this)
 {
-  if (l->front == NULL)
+  if (this->front == NULL)
     return NULL;
-  l->it.node = l->front;
-  l->it.data = l->front->data;
-  return (cstl_iterator*)&l->it;
-}
-
-static void __stdcall	MKNAME(,_delete)(MKNAME(,)* l)
-{
-  MKNAME(,_node)*	node;
-  MKNAME(,_node)*	next;
-
-  node = l->front;
-  while (node)
-    {
-      next = node->next;
-      free(node);
-      node = next;
-    }
-  free(l);
+  this->it.node = this->front;
+  this->it.data = this->front->data;
+  return (cstl_iterator*)&this->it;
 }
 
 __attribute__((unused)) static MKNAME(,)*	MKNAME(,_new)()
 {
-  MKNAME(,)*	l;
+  MKNAME(,)*	this;
 
-  l = malloc(sizeof(MKNAME(,)));
-  l->front = NULL;
-  l->back = NULL;
-  l->size = 0;
-  l->push_front	= gen_func_call(l, l->_push_front_jmp,	MKNAME(,_push_front));
-  l->push_back	= gen_func_call(l, l->_push_back_jmp,	MKNAME(,_push_back));
-  l->begin	= gen_func_call(l, l->_begin_jmp,	MKNAME(,_begin));
-  l->delete	= gen_func_call(l, l->_delete_jmp,	MKNAME(,_delete));
+  this = malloc(sizeof(MKNAME(,)));
+  this->front = NULL;
+  this->back = NULL;
+  this->size = 0;
+  this->node_size = sizeof(MKNAME(,_node));
+  this->data_size = sizeof(CSTL_TYPE);
+  this->push_front	= gen_func_call(this, this->_push_front_jmp,	MKNAME(,_push_front));
+  this->push_back	= gen_func_call(this, this->_push_back_jmp,	MKNAME(,_push_back));
+  this->begin		= gen_func_call(this, this->_begin_jmp,		MKNAME(,_begin));
+  this->delete		= gen_func_call(this, this->_delete_jmp,	list_generic_delete);
   
-  l->it.data_size = sizeof(CSTL_TYPE);
-  l->it.next	= gen_func_call(&l->it, l->it._next_jmp, MKNAME(,_next));
-  return l;
+  this->it.data_size = sizeof(CSTL_TYPE);
+  this->it.next	= gen_func_call(&this->it, this->it._next_jmp, MKNAME(,_next));
+  return this;
 }
 
 
-#undef CSTL_TYPE
-#undef CSTL_NAME
-#undef MKNAME
+# undef CSTL_TYPE
+# undef CSTL_NAME
+# undef MKNAME
+
+#endif /* !CSTL_DONT_DEFINE_TYPE */
