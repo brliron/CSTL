@@ -1,6 +1,11 @@
 #ifndef UTIL_
 # define UTIL_
 
+# ifndef _stdcall
+#  define _stdcall __attribute__((__stdcall__))
+#  define __stdcall __attribute__((__stdcall__))
+# endif /* !_stdcall */
+
 # include	<string.h>
 
 # define	for_each(type, it, o, block)			\

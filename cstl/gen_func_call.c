@@ -1,4 +1,9 @@
-#include	<Windows.h>
+#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
+# include	<Windows.h>
+#else
+# include	<sys/mman.h>
+# include	<unistd.h>
+#endif
 #include	<string.h>
 #include	"gen_func_call.h"
 
@@ -18,7 +23,7 @@
 
 void*	gen_func_call_win32(void* this, unsigned char* buff, void* func)
 {
-  unsigned char	template[] = {
+  const unsigned char	template[] = {
     0x83, 0xEC, 0x04,					// sub	esp, 4
     0x50,						// push	eax
     0x8B, 0x44, 0x24, 0x08,				// mov	eax, [esp+8]
@@ -29,7 +34,9 @@ void*	gen_func_call_win32(void* this, unsigned char* buff, void* func)
   };
 
   // Allow execution of the buffer
+#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
   MEMORY_BASIC_INFORMATION	mbi;
+
   VirtualQuery(buff, &mbi, sizeof(MEMORY_BASIC_INFORMATION));
   // Exec protection is handled with 4 different flags (rx, rwx etc), we'll handle that in a generic way.
   if (!(mbi.Protect & 0xF0))
@@ -38,6 +45,18 @@ void*	gen_func_call_win32(void* this, unsigned char* buff, void* func)
       mbi.Protect &= 0xFFFFFFF0; // Remove old protection flag
       VirtualProtect(buff, 26, mbi.Protect, &mbi.AllocationProtect); // We don't need the old protection, but VirtualProtect absolutely want to give it to us, so we'll store it in a var we don't use.
     }
+#else
+  // The only way to get page protection on unix seems to parse /proc/self/maps. Our structure needs rwx access rights anyway, so I won't bother with that.
+  static size_t	page_size = 0;
+  size_t	addr;
+
+  if (page_size == 0)
+    page_size = sysconf(_SC_PAGESIZE);
+  // Align our buffer to the page size
+  addr = (size_t)buff / page_size;
+  addr *= page_size;
+  mprotect((void*)addr, 1, PROT_READ | PROT_WRITE | PROT_EXEC); // 1 includes the entire page.
+#endif
 
   memcpy(buff, template, 26);
   memcpy(buff + 16, &this, 4);
