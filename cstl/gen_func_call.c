@@ -24,13 +24,13 @@
 void*	gen_func_call_win32(void* this, unsigned char* buff, void* func)
 {
   const unsigned char	template[] = {
-    0x83, 0xEC, 0x04,					// sub	esp, 4
-    0x50,						// push	eax
-    0x8B, 0x44, 0x24, 0x08,				// mov	eax, [esp+8]
-    0x89, 0x44, 0x24, 0x04,				// mov	[esp+4], eax
-    0xC7, 0x44, 0x24, 0x08, 0x00, 0x00, 0x00, 0x00,	// mov	[esp+8], 0
-    0x58,						// pop	eax
-    0xE9, 0x00, 0x00, 0x00, 0x00			// jmp	0
+    0x83, 0xEC, 0x08,					// sub	esp, 8		; Add enough space on the stack for our 2 variables
+    0xC7, 0x44, 0x24, 0x04, 0x00, 0x00, 0x00, 0x00,	// mov	[esp+4], 0	; Put the object on the stack
+    0xC7, 0x04, 0x24, 0x00, 0x00, 0x00, 0x00,		// mov	[esp], 0	; Put the address of our cleanup code on the stack
+    0xE9, 0x00, 0x00, 0x00, 0x00,			// jmp	0		; Jump to our function
+    // After the function call
+    0x83, 0xC4, 0x04,					// add	esp, 4		; Our return value have been poped. Pop the object.
+    0xC3						// ret
   };
 
   // Allow execution of the buffer
@@ -58,9 +58,11 @@ void*	gen_func_call_win32(void* this, unsigned char* buff, void* func)
   mprotect((void*)addr, 1, PROT_READ | PROT_WRITE | PROT_EXEC); // 1 includes the entire page.
 #endif
 
-  memcpy(buff, template, 26);
-  memcpy(buff + 16, &this, 4);
-  int	diff = (unsigned int)func - ((unsigned int)buff + 26);
-  memcpy(buff + 22, &diff, 4);
+  memcpy(buff, template, CSTL_FUNC_CALL_SIZE);
+  memcpy(buff + 7, &this, 4); // Put our object on the stack
+  void*	ret_addr = buff + 23;
+  memcpy(buff + 14, &ret_addr, 4); // Put the address of our cleanup code on the stack
+  int	diff = (unsigned int)func - ((unsigned int)buff + 23);
+  memcpy(buff + 19, &diff, 4);
   return buff;
 }

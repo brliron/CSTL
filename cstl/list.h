@@ -66,8 +66,8 @@ typedef				MKNAME(struct _,_node)
 // ==========================
 typedef				MKNAME(struct _,_iterator)
 {
-  unsigned char			_next_jmp[26];
-  struct _cstl_iterator*	(_stdcall *next)();
+  unsigned char			_next_jmp[CSTL_FUNC_CALL_SIZE];
+  struct _cstl_iterator*	(*next)();
   int				data_size;
   CSTL_TYPE			data;
   MKNAME(,_node)*		node;
@@ -98,23 +98,25 @@ typedef			MKNAME(struct _,)
 
   MKNAME(,_iterator)	it;
 
-  unsigned char		_push_front_jmp[26];
-  void			(__stdcall *push_front)(CSTL_TYPE val);
-  unsigned char		_push_back_jmp[26];
-  void			(__stdcall *push_back)(CSTL_TYPE val);
-  unsigned char		_begin_jmp[26];
-  cstl_iterator*	(__stdcall *begin)();
-  unsigned char		_delete_jmp[26];
-  void			(__stdcall *delete)();
+  unsigned char		_push_front_jmp[CSTL_FUNC_CALL_SIZE];
+  void			(*push_front)(CSTL_TYPE val);
+  unsigned char		_push_back_jmp[CSTL_FUNC_CALL_SIZE];
+  void			(*push_back)(CSTL_TYPE val);
+  unsigned char		_begin_jmp[CSTL_FUNC_CALL_SIZE];
+  cstl_iterator*	(*begin)();
+  unsigned char		_delete_jmp[CSTL_FUNC_CALL_SIZE];
+  void			(*delete)();
 }			MKNAME(,);
 
-static void __stdcall	MKNAME(,_push_front)(MKNAME(,)* this, CSTL_TYPE val)
+static void	MKNAME(,_push_front)(MKNAME(,)* this, void* ret_addr, CSTL_TYPE val)
 {
+  (void)ret_addr;
   list_generic_push_front(this, &val);
 }
 
-static void __stdcall	MKNAME(,_push_back)(MKNAME(,)* this, CSTL_TYPE val)
+static void	MKNAME(,_push_back)(MKNAME(,)* this, void* ret_addr, CSTL_TYPE val)
 {
+  (void)ret_addr;
   list_generic_push_back(this, &val);
 }
 

@@ -1,10 +1,7 @@
 #ifndef UTIL_
 # define UTIL_
 
-# ifndef _stdcall
-#  define _stdcall __attribute__((__stdcall__))
-#  define __stdcall __attribute__((__stdcall__))
-# endif /* !_stdcall */
+# include "gen_func_call.h"
 
 # include	<string.h>
 
@@ -32,8 +29,8 @@
 */
 typedef struct			_cstl_iterator
 {
-  unsigned char			_next_jmp[26];
-  struct _cstl_iterator*	(_stdcall *next)();
+  unsigned char			_next_jmp[CSTL_FUNC_CALL_SIZE];
+  struct _cstl_iterator*	(*next)();
   int				data_size;
   char				data[1];
 }				cstl_iterator;
