@@ -1,6 +1,4 @@
 #include	<stdlib.h>
-#include	"gen_func_call.h"
-
 #include	"util.h"
 
 #ifndef LIST_H_
@@ -64,6 +62,7 @@ typedef				MKNAME(struct _,_node)
 // ==========================
 // ======== ITERATOR ========
 // ==========================
+# pragma pack(push, 1)
 typedef				MKNAME(struct _,_iterator)
 {
   unsigned char			_next_jmp[CSTL_FUNC_CALL_SIZE];
@@ -72,6 +71,7 @@ typedef				MKNAME(struct _,_iterator)
   CSTL_TYPE			data;
   MKNAME(,_node)*		node;
 }				MKNAME(,_iterator);
+# pragma pack(pop)
 
 static cstl_iterator*	MKNAME(,_next)(MKNAME(,_iterator)* it)
 {
@@ -108,20 +108,21 @@ typedef			MKNAME(struct _,)
   void			(*delete)();
 }			MKNAME(,);
 
-static void	MKNAME(,_push_front)(MKNAME(,)* this, void* ret_addr, CSTL_TYPE val)
+static void	CSTL_FUNC_CALL_DEF(MKNAME(,_push_front), CSTL_TYPE val)
 {
-  (void)ret_addr;
+  CSTL_FUNC_CALL_PRE
   list_generic_push_front(this, &val);
 }
 
-static void	MKNAME(,_push_back)(MKNAME(,)* this, void* ret_addr, CSTL_TYPE val)
+static void	CSTL_FUNC_CALL_DEF(MKNAME(,_push_back), CSTL_TYPE val)
 {
-  (void)ret_addr;
+  CSTL_FUNC_CALL_PRE
   list_generic_push_back(this, &val);
 }
 
-static cstl_iterator*	MKNAME(,_begin)(MKNAME(,)* this)
+static cstl_iterator*	CSTL_FUNC_CALL_DEF(MKNAME(,_begin))
 {
+  CSTL_FUNC_CALL_PRE
   if (this->front == NULL)
     return NULL;
   this->it.node = this->front;
