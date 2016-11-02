@@ -51,7 +51,23 @@ static void	memory_allow_execution(void* addr)
 }
 #endif /* WINDOWS */
 
-#ifdef __i386__
+#if defined(__i386__) || defined(_M_IX86)
+unsigned char*		get_pop_code()
+{
+  static unsigned char	code[] = {
+    0x83, 0xC4, 0x04,	/* add	esp, 4		; Our return value have been poped. Pop the object.	*/
+    0xC3		/* ret */
+  };
+  static int			code_executable = 0;
+
+  if (code_executable == 0)
+    {
+      memory_allow_execution(code);
+      code_executable = 1;
+    }
+  return code;
+}
+
 void*	gen_func_call(void* this, unsigned char* buff, void* func)
 {
   const unsigned char	template[] = {
@@ -59,22 +75,19 @@ void*	gen_func_call(void* this, unsigned char* buff, void* func)
     0xC7, 0x44, 0x24, 0x04, 0x00, 0x00, 0x00, 0x00,	/* mov	[esp+4], 0	; Put the object on the stack				*/
     0xC7, 0x04, 0x24, 0x00, 0x00, 0x00, 0x00,		/* mov	[esp], 0	; Put the address of our cleanup code on the stack	*/
     0xE9, 0x00, 0x00, 0x00, 0x00,			/* jmp	0		; Jump to our function // TODO: replace with a call	*/
-    /* After the function call */
-    0x83, 0xC4, 0x04,					/* add	esp, 4		; Our return value have been poped. Pop the object.	*/
-    0xC3						/* ret */
   };
 
   memory_allow_execution(buff);
   memcpy(buff, template, CSTL_FUNC_CALL_SIZE);
 
   memcpy(buff + 7, &this, 4); /* Put our object on the stack */
-  void*	ret_addr = buff + 23;
+  void*	ret_addr = get_pop_code();
   memcpy(buff + 14, &ret_addr, 4); /* Put the address of our cleanup code on the stack */
   int	diff = (unsigned int)func - ((unsigned int)buff + 23);
   memcpy(buff + 19, &diff, 4);
   return buff;
 }
-#elif defined(__x86_64__)
+#elif defined(__x86_64__) || defined(_M_X64)
 # if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
 void*	gen_func_call(void* this, unsigned char* buff, void* func)
 {

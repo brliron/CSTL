@@ -101,7 +101,7 @@ static void	CSTL_FUNC_CALL_DEF(MKNAME(,_push_back), CSTL_TYPE val)
   vector_generic_push_back(this, &val);
 }
 
-__attribute__((unused)) static MKNAME(,)*	MKNAME(,_new)()
+CSTL_UNUSED static MKNAME(,)*	MKNAME(,_new)()
 {
   MKNAME(,)*	this;
 

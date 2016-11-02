@@ -136,7 +136,7 @@ static cstl_iterator*	CSTL_FUNC_CALL_DEF(MKNAME(,_begin))
   return (cstl_iterator*)&this->it;
 }
 
-__attribute__((unused)) static MKNAME(,)*	MKNAME(,_new)()
+CSTL_UNUSED static MKNAME(,)*	MKNAME(,_new)()
 {
   MKNAME(,)*	this;
 

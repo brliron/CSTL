@@ -1,11 +1,17 @@
 #ifndef UTIL_
 # define UTIL_
 
-# ifdef __i386__
-#   define CSTL_FUNC_CALL_SIZE	27
+# if defined(__GNUC__)
+#  define CSTL_UNUSED __attribute__((unused))
+# else
+#  define CSTL_UNUSED
+# endif
+
+# if defined(__i386__) || defined(_M_IX86)
+#   define CSTL_FUNC_CALL_SIZE	23
 #   define CSTL_FUNC_CALL_DEF(name, ...)	name(MKNAME(,)* this, void* ret_addr, ##__VA_ARGS__)
 #   define CSTL_FUNC_CALL_PRE			(void)ret_addr;
-#  elif defined(__x86_64__)
+#  elif defined(__x86_64__) || defined(_M_X64)
 #   if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
 #    define CSTL_FUNC_CALL_SIZE	31
 #   else /* WINDOWS */
