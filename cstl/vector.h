@@ -11,8 +11,8 @@ struct			vector_base
   int			data_size;
 
   cstl_iterator		it;
-  // I can't add new fields after this one because the size of the generic
-  // iterator may be different from the original one.
+  /* I can't add new fields after this one because the size of the generic
+  ** iterator may be different from the original one. */
 };
 
 void	vector_generic_push_back(void* this_, void* val);
@@ -34,9 +34,9 @@ void	vector_generic_delete(void* this);
 
 MKNAME(struct _,);
 
-// ==========================
-// ======== ITERATOR ========
-// ==========================
+/*************************
+******** ITERATOR ********
+*************************/
 # pragma pack(push, 1)
 typedef				MKNAME(struct _,_iterator)
 {
@@ -51,9 +51,9 @@ typedef				MKNAME(struct _,_iterator)
 
 
 
-// ==========================
-// ========== BASE ==========
-// ==========================
+/*************************
+********** BASE **********
+*************************/
 typedef		MKNAME(struct _,)
 {
   CSTL_TYPE*	data;
@@ -73,9 +73,9 @@ typedef		MKNAME(struct _,)
 
 
 
-// ==========================
-// ======== FUNCTIONS =======
-// ==========================
+/*************************
+******** FUNCTIONS *******
+*************************/
 static cstl_iterator*	MKNAME(,_next)(MKNAME(,_iterator)* it)
 {
   it->i++;

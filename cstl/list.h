@@ -24,8 +24,8 @@ struct			list_base
   int			data_size;
 
   cstl_iterator		it;
-  // I can't add new fields after this one because the size of the generic
-  // iterator may be different from the original one.
+  /* I can't add new fields after this one because the size of the generic
+  ** iterator may be different from the original one. */
 };
 
 void			list_generic_push_front(void* this_, void* val);
@@ -48,9 +48,9 @@ void			list_generic_delete(struct list_base* this);
 
 MKNAME(struct _,);
 
-// ==========================
-// ========== NODE ==========
-// ==========================
+/*************************
+********** NODE **********
+*************************/
 typedef				MKNAME(struct _,_node)
 {
   MKNAME(struct _,)*		parent;
@@ -59,9 +59,9 @@ typedef				MKNAME(struct _,_node)
   CSTL_TYPE			data;
 }				MKNAME(,_node);
 
-// ==========================
-// ======== ITERATOR ========
-// ==========================
+/*************************
+******** ITERATOR ********
+*************************/
 # pragma pack(push, 1)
 typedef				MKNAME(struct _,_iterator)
 {
@@ -84,9 +84,9 @@ static cstl_iterator*	MKNAME(,_next)(MKNAME(,_iterator)* it)
 
 
 
-// ==========================
-// ========== BASE ==========
-// ==========================
+/*************************
+********** BASE **********
+*************************/
 typedef			MKNAME(struct _,)
 {
   MKNAME(,_node)*	front;
@@ -108,6 +108,12 @@ typedef			MKNAME(struct _,)
   void			(*delete)();
 }			MKNAME(,);
 
+
+
+
+/*************************
+******** FUNCTIONS *******
+*************************/
 static void	CSTL_FUNC_CALL_DEF(MKNAME(,_push_front), CSTL_TYPE val)
 {
   CSTL_FUNC_CALL_PRE
